@@ -73,7 +73,7 @@ func TestSeq2(t *testing.T) {
 
 func TestFormatReader(t *testing.T) {
 	l := map[string]string{
-		"1\" \{ ": "a",
+		"1\" ": "a",
 		"b":    "2",
 		"c":    "3",
 	}
