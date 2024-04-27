@@ -40,7 +40,7 @@ func (f *Formatter) Format(p []byte) []byte {
 		switch b {
 		case ' ', '\t', '\r', '\n':
 		case '[', '{':
-			if !f.has_element {
+			if !f.has_element && f.level != 0 {
 				f.newline()
 				f.writeindent()
 			} else {
@@ -58,6 +58,9 @@ func (f *Formatter) Format(p []byte) []byte {
 				f.level--
 			}
 			f.write(b)
+			if f.level == 0 {
+				f.newline()
+			}
 		case ':':
 			f.write(b)
 			if !f.compress {
