@@ -40,7 +40,12 @@ func (f *Formatter) Format(p []byte) []byte {
 		switch b {
 		case ' ', '\t', '\r', '\n':
 		case '[', '{':
-			f.has_element = false
+			if !f.has_element {
+				f.newline()
+				f.writeindent()
+			} else {
+				f.has_element = false
+			}
 			f.write(b)
 			f.level++
 		case ']', '}':

@@ -94,7 +94,9 @@ func TestSetIndent(t *testing.T) {
 			"x": "y",
 		},
 		"b": []string{},
-		"c": "3",
+		"c": []any{
+			map[string]any{},
+		},
 	}}
 	err := enc.Encode(l.Range())
 	if err != nil {
