@@ -78,7 +78,7 @@ func TestFormatReader(t *testing.T) {
 		return
 	}
 	defer rsp.Body.Close()
-	r := NewFormatReader(rsp.Body, "", "  ")
+	r := NewFormatReader(rsp.Body, "", "")
 	_, err = io.Copy(os.Stdout, r)
 	if err != nil {
 		t.Error(err)

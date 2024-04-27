@@ -8,12 +8,14 @@ type Formatter struct {
 	has_element bool
 	quoted      bool
 	escaped     bool
+	compress    bool
 }
 
 func NewFormatter(prefix, indent string) *Formatter {
 	return &Formatter{
-		prefix: []byte(prefix),
-		indent: []byte(indent),
+		prefix:   []byte(prefix),
+		indent:   []byte(indent),
+		compress: len(prefix) == 0 && len(indent) == 0,
 	}
 }
 
@@ -53,7 +55,9 @@ func (f *Formatter) Format(p []byte) []byte {
 			f.write(b)
 		case ':':
 			f.write(b)
-			f.write(' ')
+			if !f.compress {
+				f.write(' ')
+			}
 		case ',':
 			f.write(b)
 			f.newline()
@@ -79,6 +83,9 @@ func (f *Formatter) write(b ...byte) {
 }
 
 func (f *Formatter) writeindent() {
+	if f.compress {
+		return
+	}
 	for range f.level {
 		f.write(f.indent...)
 	}
@@ -86,6 +93,9 @@ func (f *Formatter) writeindent() {
 }
 
 func (f *Formatter) newline() {
+	if f.compress {
+		return
+	}
 	f.write('\n')
 	f.write(f.prefix...)
 	return
