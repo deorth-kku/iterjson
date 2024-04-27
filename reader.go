@@ -6,89 +6,34 @@ import (
 
 type FormatReader struct {
 	io.Reader
-	buf     []byte
-	indent  []byte
-	prefix  []byte
-	level   int
-	quoted  bool
-	escaped bool
+	*Formatter
+	buf []byte
 }
 
 func NewFormatReader(reader io.Reader, prefix, indent string) (f *FormatReader) {
 	f = new(FormatReader)
-	f.indent = []byte(indent)
-	f.prefix = []byte(prefix)
 	f.Reader = reader
+	f.Formatter = NewFormatter(prefix, indent)
 	return
 }
 
 func (f *FormatReader) Read(data []byte) (n int, err error) {
-	t := make([]byte, 1)
-
-	for {
-		n, err = f.Reader.Read(t)
-		if err != nil {
+	datalen := len(data)
+	temp := make([]byte, len(data))
+	for len(f.buf) < datalen {
+		n, err = f.Reader.Read(temp)
+		if err == io.EOF {
+			temp = temp[:n]
+			f.buf = append(f.buf, f.Format(temp)...)
 			break
-		}
-		if n == 0 {
-			break
-		}
-		if f.escaped {
-			f.buf = append(f.buf, t...)
-			f.escaped = !f.escaped
-			continue
-		}
-		if f.quoted {
-			switch t[0] {
-			case '\\':
-				f.escaped = true
-			case '"':
-				f.quoted = !f.quoted
-			}
-			f.buf = append(f.buf, t...)
-			continue
-		}
-		switch t[0] {
-		case ' ', '\t', '\r', '\n': // skip whitespaces
-		case '[', '{':
-			f.buf = append(f.buf, t...)
-			f.level++
-			f.newline()
-			f.writeindent()
-		case ']', '}':
-			f.newline()
-			f.level--
-			f.writeindent()
-			f.buf = append(f.buf, t...)
-		case ':':
-			f.buf = append(f.buf, t...)
-			f.buf = append(f.buf, ' ')
-		case ',':
-			f.buf = append(f.buf, t...)
-			f.newline()
-			f.writeindent()
-		case '"':
-			f.quoted = !f.quoted
-			fallthrough
-		default:
-			f.buf = append(f.buf, t...)
-		}
-		if len(f.buf) >= len(data) {
-			break
+		} else if err != nil {
+			return
+		} else {
+			temp = temp[:n]
+			f.buf = append(f.buf, f.Format(temp)...)
 		}
 	}
 	n = copy(data, f.buf)
 	f.buf = f.buf[n:]
 	return
-}
-
-func (f *FormatReader) writeindent() {
-	for range f.level {
-		f.buf = append(f.buf, f.indent...)
-	}
-}
-
-func (f *FormatReader) newline() {
-	f.buf = append(f.buf, '\n')
-	f.buf = append(f.buf, f.prefix...)
 }

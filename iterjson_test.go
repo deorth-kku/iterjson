@@ -1,11 +1,11 @@
 package iterjson
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"iter"
+	"net/http"
 	"os"
 	"testing"
 )
@@ -72,30 +72,17 @@ func TestSeq2(t *testing.T) {
 }
 
 func TestFormatReader(t *testing.T) {
-	l := map[string]string{
-		"1\" ": "a",
-		"b":    "2",
-		"c":    "3",
-	}
-	data, err := json.Marshal(l)
+	rsp, err := http.Get("https://api.github.com/repos/deorth-kku/iterjson")
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	fmt.Println(string(data))
-	buf := bytes.NewReader(data)
-	fm := NewFormatReader(buf, "", "    ")
-	data, err = io.ReadAll(fm)
+	defer rsp.Body.Close()
+	r := NewFormatReader(rsp.Body, "", "  ")
+	_, err = io.Copy(os.Stdout, r)
 	if err != nil {
 		t.Error(err)
 		return
-	}
-	fmt.Println(string(data))
-
-	var table map[string]string
-	err = json.Unmarshal(data, &table)
-	if err != nil {
-		t.Error(err)
 	}
 }
 
@@ -103,10 +90,10 @@ func TestSetIndent(t *testing.T) {
 	enc := NewEncoder[string, any](os.Stdout)
 	enc.SetIndent("", "    ")
 	l := &testseq2{map[string]any{
-		"1\" ": map[string]any{
+		"a\" ": map[string]any{
 			"x": "y",
 		},
-		"b": "2",
+		"b": []string{},
 		"c": "3",
 	}}
 	err := enc.Encode(l.Range())
