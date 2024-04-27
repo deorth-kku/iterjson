@@ -4,6 +4,7 @@ import "io"
 
 type FormatWriter struct {
 	io.Writer
+	buf     []byte
 	indent  []byte
 	prefix  []byte
 	level   int
@@ -13,12 +14,9 @@ type FormatWriter struct {
 
 func (w *FormatWriter) Write(p []byte) (int, error) {
 	var err error
-	for i, b := range p {
+	for _, b := range p {
 		if w.escaped {
-			err = w.write(b)
-			if err != nil {
-				return i, err
-			}
+			w.write(b)
 			w.escaped = false
 			continue
 		}
@@ -29,102 +27,58 @@ func (w *FormatWriter) Write(p []byte) (int, error) {
 			case '"':
 				w.quoted = !w.quoted
 			}
-			err = w.write(b)
-			if err != nil {
-				return i, err
-			}
+			w.write(b)
 			continue
 		}
 		switch b {
 		case ' ', '\t', '\r', '\n':
 		case '[', '{':
-			err = w.write(b)
-			if err != nil {
-				return i, err
-			}
+			w.write(b)
 			w.level++
-			err = w.newline()
-			if err != nil {
-				return i, err
-			}
-			err = w.writeindent()
-			if err != nil {
-				return i, err
-			}
+			w.newline()
+			w.writeindent()
 		case ']', '}':
-			err = w.newline()
-			if err != nil {
-				return i, err
-			}
-			err = w.write(b)
-			if err != nil {
-				return i, err
-			}
+			w.newline()
 			w.level--
-			err = w.newline()
-			if err != nil {
-				return i, err
-			}
-			err = w.writeindent()
-			if err != nil {
-				return i, err
-			}
+			w.writeindent()
+			w.write(b)
 		case ':':
-			err = w.write(b)
-			if err != nil {
-				return i, err
-			}
-			err = w.write(' ')
-			if err != nil {
-				return i, err
-			}
+			w.write(b)
+			w.write(' ')
 		case ',':
-			err = w.write(b)
-			if err != nil {
-				return i, err
-			}
-			err = w.newline()
-			if err != nil {
-				return i, err
-			}
-			err = w.writeindent()
-			if err != nil {
-				return i, err
-			}
+			w.write(b)
+			w.newline()
+			w.writeindent()
 		case '"':
 			w.quoted = !w.quoted
 			fallthrough
 		default:
-			err = w.write(b)
-			if err != nil {
-				return i, err
-			}
+			w.write(b)
 		}
 	}
+	n, err := w.Writer.Write(w.buf)
+	if err != nil {
+		return 0, err
+	}
+	w.buf = w.buf[n:]
 	return len(p), nil
 }
 
-func (w *FormatWriter) write(b byte) (err error) {
-	_, err = w.Writer.Write([]byte{b})
+func (w *FormatWriter) write(b ...byte) {
+	w.buf = append(w.buf, b...)
 	return
 }
 
-func (w *FormatWriter) writeindent() (err error) {
+func (w *FormatWriter) writeindent() {
 	for range w.level {
-		_, err = w.Writer.Write(w.indent)
-		if err != nil {
-			return
-		}
+		w.write(w.indent...)
 	}
 	return
 }
 
-func (w *FormatWriter) newline() (err error) {
-	err = w.write('\n')
-	if err != nil {
-		return
-	}
-	_, err = w.Write(w.prefix)
+func (w *FormatWriter) newline() {
+	w.write('\n')
+	w.write(w.prefix...)
 	return
 }
 

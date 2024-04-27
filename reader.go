@@ -57,10 +57,9 @@ func (f *FormatReader) Read(data []byte) (n int, err error) {
 			f.writeindent()
 		case ']', '}':
 			f.newline()
-			f.buf = append(f.buf, t...)
 			f.level--
-			f.newline()
 			f.writeindent()
+			f.buf = append(f.buf, t...)
 		case ':':
 			f.buf = append(f.buf, t...)
 			f.buf = append(f.buf, ' ')

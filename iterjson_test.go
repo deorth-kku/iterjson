@@ -39,11 +39,11 @@ func TestSeq(t *testing.T) {
 }
 
 type testseq2 struct {
-	table map[string]string
+	table map[string]any
 }
 
-func (it *testseq2) Range() iter.Seq2[string, string] {
-	return func(yield func(string, string) bool) {
+func (it *testseq2) Range() iter.Seq2[string, any] {
+	return func(yield func(string, any) bool) {
 		for k, v := range it.table {
 			if !yield(k, v) {
 				return
@@ -53,7 +53,7 @@ func (it *testseq2) Range() iter.Seq2[string, string] {
 }
 
 func TestSeq2(t *testing.T) {
-	l := &testseq2{map[string]string{
+	l := &testseq2{map[string]any{
 		"1": "a",
 		"b": "2",
 		"c": "3",
@@ -100,12 +100,14 @@ func TestFormatReader(t *testing.T) {
 }
 
 func TestSetIndent(t *testing.T) {
-	enc := NewEncoder[string, string](os.Stdout)
+	enc := NewEncoder[string, any](os.Stdout)
 	enc.SetIndent("", "    ")
-	l := &testseq2{map[string]string{
-		"1\" ": "a",
-		"b":    "2",
-		"c":    "3",
+	l := &testseq2{map[string]any{
+		"1\" ": map[string]any{
+			"x": "y",
+		},
+		"b": "2",
+		"c": "3",
 	}}
 	err := enc.Encode(l.Range())
 	if err != nil {
