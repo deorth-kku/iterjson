@@ -1,6 +1,7 @@
 package iterjson
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -49,7 +50,14 @@ func TestFormatReader(t *testing.T) {
 		return
 	}
 	defer rsp.Body.Close()
-	r := NewFormatReader(rsp.Body, "", "")
+	r := NewFormatReader(rsp.Body, "", "    ")
+	buf := bytes.NewBuffer(nil)
+	_, err = io.Copy(buf, r)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	r = NewFormatReader(buf, "", "")
 	_, err = io.Copy(os.Stdout, r)
 	if err != nil {
 		t.Error(err)
