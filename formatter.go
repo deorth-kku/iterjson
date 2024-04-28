@@ -91,7 +91,7 @@ func (f *Formatter) write(b ...byte) {
 }
 
 func (f *Formatter) writeindent() {
-	if f.compress {
+	if f.compress || f.level < 0 {
 		return
 	}
 	for range f.level {
@@ -107,4 +107,8 @@ func (f *Formatter) newline() {
 	f.write('\n')
 	f.write(f.prefix...)
 	return
+}
+
+func Format(data []byte, prefix, indent string) []byte {
+	return NewFormatter(prefix, indent).Format(data)
 }

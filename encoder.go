@@ -20,6 +20,10 @@ func (e *Encoder[K, V]) Encode(arg any) (err error) {
 		return e.encodeSeq(v)
 	case iter.Seq2[K, V]:
 		return e.encodeSeq2(v)
+	case []V:
+		return e.encodeSeq(SliceSeq(v))
+	case map[K]V:
+		return e.encodeSeq2(MapSeq2(v))
 	default:
 		var data []byte
 		data, err = json.Marshal(v)
