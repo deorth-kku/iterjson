@@ -5,13 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"os"
+	"slices"
 	"testing"
 )
 
 func TestSeq(t *testing.T) {
-	l := SliceSeq([]string{"a", "b", "c"})
+	l := slices.Values([]string{"a", "b", "c"})
 	data, err := Marshal[string, string](l)
 	if err != nil {
 		t.Error(err)
@@ -30,7 +32,7 @@ func TestSeq2(t *testing.T) {
 		"b": "2",
 		"c": "3",
 	}
-	data, err := Marshal[string, any](MapSeq2(l))
+	data, err := Marshal[string, any](maps.All(l))
 	if err != nil {
 		t.Error(err)
 		return
@@ -74,6 +76,26 @@ func TestSetIndent(t *testing.T) {
 			"x": "y",
 		},
 		"b": []string{},
+		"c": []any{
+			map[string]any{},
+		},
+	}
+	err := enc.Encode(m)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestSetEscapeHTML(t *testing.T) {
+	enc := NewEncoder[string, any](os.Stdout)
+	enc.SetIndent("", "    ")
+	enc.SetEscapeHTML(false)
+
+	m := map[string]any{
+		"a\" ": map[string]any{
+			"x": "y",
+		},
+		"b<>": []string{},
 		"c": []any{
 			map[string]any{},
 		},

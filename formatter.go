@@ -87,7 +87,6 @@ func (f *Formatter) Format(p []byte) []byte {
 
 func (f *Formatter) write(b ...byte) {
 	f.buf = append(f.buf, b...)
-	return
 }
 
 func (f *Formatter) writeindent() {
@@ -97,7 +96,6 @@ func (f *Formatter) writeindent() {
 	for range f.level {
 		f.write(f.indent...)
 	}
-	return
 }
 
 func (f *Formatter) newline() {
@@ -106,7 +104,6 @@ func (f *Formatter) newline() {
 	}
 	f.write('\n')
 	f.write(f.prefix...)
-	return
 }
 
 func Format(data []byte, prefix, indent string) []byte {
