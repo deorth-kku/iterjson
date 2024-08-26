@@ -10,7 +10,7 @@ func MarshalIndent[K comparable, V any](arg any, prefix, indent string) (data []
 	w := bytes.NewBuffer(nil)
 	e := NewEncoder[K, V](w)
 	e.SetIndent(prefix, indent)
-	err = e.Encode(arg)
+	err = e.encode(arg)
 	if err != nil {
 		return
 	}

@@ -88,8 +88,8 @@ func TestSetIndent(t *testing.T) {
 
 func TestSetEscapeHTML(t *testing.T) {
 	enc := NewEncoder[string, any](os.Stdout)
-	enc.SetIndent("", "    ")
 	enc.SetEscapeHTML(false)
+	enc.SetIndent("", "    ")
 
 	m := map[string]any{
 		"a\" ": map[string]any{
@@ -101,6 +101,31 @@ func TestSetEscapeHTML(t *testing.T) {
 		},
 	}
 	err := enc.Encode(m)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestSetNewlines(t *testing.T) {
+	enc := NewEncoder[string, any](os.Stdout)
+	enc.SetEscapeHTML(false)
+	enc.SetNewlines(true)
+
+	m := map[string]any{
+		"a\" ": map[string]any{
+			"x": "y",
+		},
+		"b<>": []string{},
+		"c": []any{
+			map[string]any{},
+		},
+	}
+	err := enc.Encode(m)
+	if err != nil {
+		t.Error(err)
+	}
+	enc.SetNewlines(false)
+	err = enc.Encode(m)
 	if err != nil {
 		t.Error(err)
 	}
