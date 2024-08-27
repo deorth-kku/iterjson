@@ -23,7 +23,11 @@ func (e *Encoder[K, V]) encode(arg any) (err error) {
 	switch v := arg.(type) {
 	case iter.Seq[V]:
 		return e.encodeSeq(v)
+	case func(func(V) bool):
+		return e.encodeSeq(v)
 	case iter.Seq2[K, V]:
+		return e.encodeSeq2(v)
+	case func(func(K, V) bool):
 		return e.encodeSeq2(v)
 	case []V:
 		return e.encodeSeq(slices.Values(v))
