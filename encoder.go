@@ -10,13 +10,13 @@ import (
 
 type Encoder[K comparable, V any] struct {
 	*json.Encoder
-	w          io.Writer
-	newlines   bool
+	w          *FormatWriter
 	escapeHTML bool
 }
 
 func NewEncoder[K comparable, V any](w io.Writer) *Encoder[K, V] {
-	return &Encoder[K, V]{json.NewEncoder(NewFormatWriter(w, "", "")), w, true, true}
+	fw := NewFormatWriter(w, "", "")
+	return &Encoder[K, V]{json.NewEncoder(fw), fw, true}
 }
 
 func (e *Encoder[K, V]) encode(arg any) (err error) {
@@ -34,18 +34,10 @@ func (e *Encoder[K, V]) encode(arg any) (err error) {
 	}
 }
 
-func (e *Encoder[K, V]) writeByte(b byte) (err error) {
-	_, err = e.w.Write([]byte{b})
-	return
-}
-
 func (e *Encoder[K, V]) Encode(arg any) (err error) {
 	err = e.encode(arg)
 	if err != nil {
 		return
-	}
-	if e.newlines {
-		err = e.writeByte('\n')
 	}
 	return
 }
@@ -54,11 +46,7 @@ func (e *Encoder[K, V]) SetIndent(prefix, indent string) {
 	if len(prefix) == 0 && len(indent) == 0 {
 		return
 	}
-	if fw, ok := e.w.(*FormatWriter); ok {
-		e.w = NewFormatWriter(fw.Writer, prefix, indent)
-	} else {
-		e.w = NewFormatWriter(e.w, prefix, indent)
-	}
+	e.w = NewFormatWriter(e.w.Writer, prefix, indent)
 	e.Encoder = json.NewEncoder(e.w)
 	e.Encoder.SetEscapeHTML(e.escapeHTML)
 }
@@ -69,5 +57,5 @@ func (e *Encoder[K, V]) SetEscapeHTML(escapeHTML bool) {
 }
 
 func (e *Encoder[K, V]) SetNewlines(newlines bool) {
-	e.newlines = newlines
+	e.w.tailing_newline = newlines
 }

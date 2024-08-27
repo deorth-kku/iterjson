@@ -5,7 +5,7 @@ import (
 )
 
 func (e *Encoder[K, V]) encodeSeq2(iter iter.Seq2[K, V]) (err error) {
-	err = e.writeByte('{')
+	err = e.w.WriteByte('{')
 	if err != nil {
 		return
 	}
@@ -14,7 +14,7 @@ func (e *Encoder[K, V]) encodeSeq2(iter iter.Seq2[K, V]) (err error) {
 		if first {
 			first = false
 		} else {
-			err = e.writeByte(',')
+			err = e.w.WriteByte(',')
 			if err != nil {
 				return
 			}
@@ -23,7 +23,7 @@ func (e *Encoder[K, V]) encodeSeq2(iter iter.Seq2[K, V]) (err error) {
 		if err != nil {
 			return
 		}
-		err = e.writeByte(':')
+		err = e.w.WriteByte(':')
 		if err != nil {
 			return
 		}
@@ -32,6 +32,6 @@ func (e *Encoder[K, V]) encodeSeq2(iter iter.Seq2[K, V]) (err error) {
 			return
 		}
 	}
-	err = e.writeByte('}')
+	err = e.w.WriteByte('}')
 	return
 }

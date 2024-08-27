@@ -69,7 +69,7 @@ func TestFormatReader(t *testing.T) {
 
 func TestSetIndent(t *testing.T) {
 	enc := NewEncoder[string, any](os.Stdout)
-	enc.SetIndent("", "    ")
+	enc.SetIndent("|test|", "    ")
 
 	m := map[string]any{
 		"a\" ": map[string]any{

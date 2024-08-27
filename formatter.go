@@ -1,21 +1,23 @@
 package iterjson
 
 type Formatter struct {
-	buf         []byte
-	indent      []byte
-	prefix      []byte
-	level       int
-	has_element bool
-	quoted      bool
-	escaped     bool
-	compress    bool
+	buf             []byte
+	indent          []byte
+	prefix          []byte
+	level           int
+	has_element     bool
+	quoted          bool
+	escaped         bool
+	compress        bool
+	tailing_newline bool
 }
 
 func NewFormatter(prefix, indent string) *Formatter {
 	return &Formatter{
-		prefix:   []byte(prefix),
-		indent:   []byte(indent),
-		compress: len(prefix) == 0 && len(indent) == 0,
+		prefix:          []byte(prefix),
+		indent:          []byte(indent),
+		compress:        len(prefix) == 0 && len(indent) == 0,
+		tailing_newline: true,
 	}
 }
 
@@ -58,8 +60,8 @@ func (f *Formatter) Format(p []byte) []byte {
 				f.level--
 			}
 			f.write(b)
-			if f.level == 0 {
-				f.newline()
+			if f.level == 0 && f.tailing_newline {
+				f.write('\n')
 			}
 		case ':':
 			f.write(b)
