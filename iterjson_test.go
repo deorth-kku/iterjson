@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"io"
 	"maps"
+	"math/rand/v2"
 	"net/http"
 	"os"
 	"slices"
+	"strconv"
 	"testing"
 )
 
@@ -126,6 +128,45 @@ func TestSetNewlines(t *testing.T) {
 	}
 	enc.SetNewlines(false)
 	err = enc.Encode(m)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+type genDictAny struct {
+	len int
+}
+
+func (g genDictAny) Range(yield func(string, any) bool) {
+	for range g.len {
+		if !yield(strconv.Itoa(rand.Int()), rand.Int()) {
+			break
+		}
+	}
+}
+
+type genListAny struct {
+	len int
+}
+
+func (g genListAny) Range(yield func(any) bool) {
+	for range g.len {
+		if !yield(rand.Int()) {
+			break
+		}
+	}
+}
+
+func TestNested(t *testing.T) {
+	d0 := genDictAny{10}
+	d1 := genListAny{10}
+	m := map[string]any{
+		"dict": d0.Range,
+		"list": d1.Range,
+	}
+	enc := NewEncoder[string, any](os.Stdout)
+	enc.SetIndent("", "    ")
+	err := enc.Encode(m)
 	if err != nil {
 		t.Error(err)
 	}
