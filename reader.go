@@ -7,7 +7,6 @@ import (
 type FormatReader struct {
 	io.Reader
 	*Formatter
-	buf []byte
 }
 
 func NewFormatReader(reader io.Reader, prefix, indent string) (f *FormatReader) {
@@ -19,19 +18,18 @@ func NewFormatReader(reader io.Reader, prefix, indent string) (f *FormatReader) 
 
 func (f *FormatReader) Read(data []byte) (n int, err error) {
 	datalen := len(data)
-	for len(f.buf) < datalen {
+	for len(f.Formatter.buf) < datalen {
 		n, err = f.Reader.Read(data)
 		if err == io.EOF {
-			f.buf = append(f.buf, f.Format(data[:n])...)
+			f.Formatter.Write(data[:n])
 			break
 		} else if err != nil {
 			return
 		} else {
-			f.buf = append(f.buf, f.Format(data[:n])...)
+			f.Formatter.Write(data[:n])
 		}
 	}
-	n = copy(data, f.buf)
+	n, err = f.Formatter.Read(data)
 	clear(data[n:])
-	f.buf = f.buf[n:]
 	return
 }

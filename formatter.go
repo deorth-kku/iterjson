@@ -1,5 +1,7 @@
 package iterjson
 
+import "io"
+
 type Formatter struct {
 	buf             []byte
 	indent          []byte
@@ -23,6 +25,11 @@ func NewFormatter(prefix, indent string) *Formatter {
 
 func (f *Formatter) Format(p []byte) []byte {
 	f.buf = nil
+	f.Write(p)
+	return f.buf
+}
+
+func (f *Formatter) Write(p []byte) (int, error) {
 	for _, b := range p {
 		if f.escaped {
 			f.write(b)
@@ -84,11 +91,21 @@ func (f *Formatter) Format(p []byte) []byte {
 			f.write(b)
 		}
 	}
-	return f.buf
+	return len(p), nil
 }
 
 func (f *Formatter) write(b ...byte) {
 	f.buf = append(f.buf, b...)
+}
+
+func (f *Formatter) Read(data []byte) (int, error) {
+	n := copy(data, f.buf)
+	f.buf = f.buf[n:]
+	var err error
+	if len(f.buf) == 0 {
+		err = io.EOF
+	}
+	return int(n), err
 }
 
 func (f *Formatter) writeindent() {
