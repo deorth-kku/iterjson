@@ -48,12 +48,15 @@ func BenchmarkStdlib(b *testing.B) {
 func BenchmarkReader(b *testing.B) {
 	b.StopTimer()
 	d0 := genDict{b.N}
-	d1 := maps.Collect(d0.Range)
-	d2, _ := json.Marshal(d1)
-	data := bytes.NewBuffer(d2)
+	data := bytes.NewBuffer(nil)
+	enc := NewEncoder[string, int](data)
+	err := enc.Encode(d0.Range)
+	if err != nil {
+		b.Error(err)
+	}
 	rd := NewFormatReader(data, "", "   ")
 	b.StartTimer()
-	_, err := io.Copy(bytes.NewBuffer(nil), rd)
+	_, err = io.Copy(bytes.NewBuffer(nil), rd)
 	if err != nil {
 		b.Error(err)
 	}
@@ -62,12 +65,15 @@ func BenchmarkReader(b *testing.B) {
 func BenchmarkWriter(b *testing.B) {
 	b.StopTimer()
 	d0 := genDict{b.N}
-	d1 := maps.Collect(d0.Range)
-	d2, _ := json.Marshal(d1)
-	data := bytes.NewBuffer(d2)
+	data := bytes.NewBuffer(nil)
+	enc := NewEncoder[string, int](data)
+	err := enc.Encode(d0.Range)
+	if err != nil {
+		b.Error(err)
+	}
 	wt := NewFormatWriter(bytes.NewBuffer(nil), "", "   ")
 	b.StartTimer()
-	_, err := io.Copy(wt, data)
+	_, err = io.Copy(wt, data)
 	if err != nil {
 		b.Error(err)
 	}
