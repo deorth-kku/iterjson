@@ -6,19 +6,16 @@ import (
 )
 
 func (e *Encoder) encodeSeq(iter iter.Seq[reflect.Value]) (err error) {
-	err = e.w.WriteByte('[')
-	if err != nil {
-		return
-	}
 	first := true
 	for line := range iter {
 		if first {
 			first = false
+			err = e.w.WriteByte('[')
 		} else {
 			err = e.w.WriteByte(',')
-			if err != nil {
-				return
-			}
+		}
+		if err != nil {
+			return
 		}
 		err = e.encode(line)
 		if err != nil {

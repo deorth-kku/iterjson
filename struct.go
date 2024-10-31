@@ -7,10 +7,6 @@ import (
 )
 
 func (e *Encoder) encodeStruct(v reflect.Value) error {
-	err := e.w.WriteByte('{')
-	if err != nil {
-		return err
-	}
 	first := true
 	t := v.Type()
 	for i := range t.NumField() {
@@ -41,13 +37,15 @@ func (e *Encoder) encodeStruct(v reflect.Value) error {
 			}
 		}
 
+		var err error
 		if first {
 			first = false
+			err = e.w.WriteByte('{')
 		} else {
 			err = e.w.WriteByte(',')
-			if err != nil {
-				return err
-			}
+		}
+		if err != nil {
+			return err
 		}
 		err = e.enc.Encode(jsonTag)
 		if err != nil {

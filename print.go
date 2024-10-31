@@ -1,6 +1,7 @@
 package iterjson
 
 import (
+	"fmt"
 	"io"
 	"os"
 )
@@ -22,5 +23,10 @@ func Fprint(f io.Writer, data any) error {
 }
 
 func Print(data any) error {
+	return Fprint(os.Stdout, data)
+}
+
+func Println(data any) error {
+	defer fmt.Print("\n")
 	return Fprint(os.Stdout, data)
 }

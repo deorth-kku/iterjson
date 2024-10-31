@@ -7,19 +7,16 @@ import (
 )
 
 func (e *Encoder) encodeSeq2(iter iter.Seq2[reflect.Value, reflect.Value]) (err error) {
-	err = e.w.WriteByte('{')
-	if err != nil {
-		return
-	}
 	first := true
 	for k, v := range iter {
 		if first {
 			first = false
+			err = e.w.WriteByte('{')
 		} else {
 			err = e.w.WriteByte(',')
-			if err != nil {
-				return
-			}
+		}
+		if err != nil {
+			return
 		}
 		err = e.enc.Encode(fmt.Sprint(k.Interface()))
 		if err != nil {
