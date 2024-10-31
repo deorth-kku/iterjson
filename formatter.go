@@ -19,7 +19,7 @@ func NewFormatter(prefix, indent string) *Formatter {
 		prefix:          []byte(prefix),
 		indent:          []byte(indent),
 		compress:        len(prefix) == 0 && len(indent) == 0,
-		tailing_newline: true,
+		tailing_newline: false,
 	}
 }
 

@@ -22,7 +22,7 @@ func (e *Encoder) encodeStruct(v reflect.Value) error {
 		fv := v.Field(i)                 // used as value
 		var use_string bool
 		if len(jsonTag) == 0 {
-			jsonTag = conv2snake_case(field.Name)
+			jsonTag = field.Name
 		} else if jsonTag == "-" {
 			continue
 		} else {
@@ -67,16 +67,4 @@ func (e *Encoder) encodeStruct(v reflect.Value) error {
 		}
 	}
 	return e.w.WriteByte('}')
-}
-
-// Convert CamelCase to snake_case
-func conv2snake_case(CamelCase string) string {
-	result := make([]rune, len(CamelCase))
-	for i, r := range CamelCase {
-		if i > 0 && r >= 'A' && r <= 'Z' { // Capital letter found
-			result = append(result, '_')
-		}
-		result = append(result, r)
-	}
-	return strings.ToLower(string(result))
 }

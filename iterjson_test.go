@@ -3,6 +3,7 @@ package iterjson
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"maps"
@@ -167,6 +168,42 @@ func TestNested(t *testing.T) {
 	enc := NewEncoder(os.Stdout)
 	enc.SetIndent("", "    ")
 	err := enc.Encode(m)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func verify(arg any) error {
+	data0, err := Marshal(arg)
+	if err != nil {
+		return err
+	}
+	data1, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	if !slices.Equal(data0, data1) {
+		return errors.New("not equal")
+	}
+	return nil
+}
+
+type testStruct struct {
+	NormalField        string
+	FieldWithTag       string `json:"this_is_tag"`
+	FieldWithOmitEmpty string `json:"om,omitempty"`
+	FieldToString      int    `json:"number,string"`
+	OmitField          bool   `json:"-"`
+}
+
+func TestStruct(t *testing.T) {
+	err := verify(testStruct{
+		NormalField:        "a",
+		FieldWithTag:       "b",
+		FieldWithOmitEmpty: "c",
+		FieldToString:      4,
+		OmitField:          false,
+	})
 	if err != nil {
 		t.Error(err)
 	}
