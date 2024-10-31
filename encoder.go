@@ -24,6 +24,8 @@ func (e *Encoder) encode(arg reflect.Value) error {
 		return e.encode(arg.Elem())
 	case reflect.Interface:
 		return e.encode(reflect.ValueOf(arg.Interface()))
+	case reflect.Invalid:
+		return e.enc.Encode(nil)
 	case reflect.Chan:
 		return e.encodeSeq(arg.Seq())
 	case reflect.Slice, reflect.Array:

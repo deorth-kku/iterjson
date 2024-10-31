@@ -248,3 +248,10 @@ func TestStruct(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestNil(t *testing.T) {
+	err := verify(nil)
+	if err != nil {
+		t.Error(err)
+	}
+}
