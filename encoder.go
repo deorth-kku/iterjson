@@ -7,7 +7,7 @@ import (
 )
 
 type Encoder struct {
-	*json.Encoder
+	enc        *json.Encoder
 	w          *FormatWriter
 	escapeHTML bool
 }
@@ -18,18 +18,12 @@ func NewEncoder(w io.Writer) *Encoder {
 }
 
 func (e *Encoder) encode(arg reflect.Value) error {
-	for arg.Kind() == reflect.Pointer {
-		arg = arg.Elem()
-	}
 	switch arg.Kind() {
+	case reflect.Pointer:
+		return e.encode(arg.Elem())
 	case reflect.Struct:
 		if msl, ok := arg.Interface().(json.Marshaler); ok {
-			data, err := msl.MarshalJSON()
-			if err != nil {
-				return err
-			}
-			e.w.write(data...)
-			return nil
+			return e.enc.Encode(msl)
 		}
 		return e.encodeStruct(arg)
 	case reflect.Map:
@@ -47,7 +41,7 @@ func (e *Encoder) encode(arg reflect.Value) error {
 		}
 		fallthrough
 	default:
-		return e.Encoder.Encode(arg.Interface())
+		return e.enc.Encode(arg.Interface())
 	}
 }
 
@@ -60,13 +54,13 @@ func (e *Encoder) SetIndent(prefix, indent string) {
 		return
 	}
 	e.w = NewFormatWriter(e.w.Writer, prefix, indent)
-	e.Encoder = json.NewEncoder(e.w)
-	e.Encoder.SetEscapeHTML(e.escapeHTML)
+	e.enc = json.NewEncoder(e.w)
+	e.enc.SetEscapeHTML(e.escapeHTML)
 }
 
 func (e *Encoder) SetEscapeHTML(escapeHTML bool) {
 	e.escapeHTML = escapeHTML
-	e.Encoder.SetEscapeHTML(escapeHTML)
+	e.enc.SetEscapeHTML(escapeHTML)
 }
 
 func (e *Encoder) SetNewlines(newlines bool) {

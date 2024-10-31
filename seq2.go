@@ -1,6 +1,7 @@
 package iterjson
 
 import (
+	"fmt"
 	"iter"
 	"reflect"
 )
@@ -20,7 +21,7 @@ func (e *Encoder) encodeSeq2(iter iter.Seq2[reflect.Value, reflect.Value]) (err 
 				return
 			}
 		}
-		err = e.encode(k)
+		err = e.enc.Encode(fmt.Sprint(k.Interface()))
 		if err != nil {
 			return
 		}

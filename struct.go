@@ -1,8 +1,8 @@
 package iterjson
 
 import (
+	"fmt"
 	"reflect"
-	"strconv"
 	"strings"
 )
 
@@ -20,6 +20,7 @@ func (e *Encoder) encodeStruct(v reflect.Value) error {
 		}
 		jsonTag := field.Tag.Get("json") // used as key
 		fv := v.Field(i)                 // used as value
+		var use_string bool
 		if len(jsonTag) == 0 {
 			jsonTag = conv2snake_case(field.Name)
 		} else if jsonTag == "-" {
@@ -35,7 +36,7 @@ func (e *Encoder) encodeStruct(v reflect.Value) error {
 						continue
 					}
 				case "string":
-					fv = reflect.ValueOf(fv.String())
+					use_string = true
 				}
 			}
 		}
@@ -48,12 +49,19 @@ func (e *Encoder) encodeStruct(v reflect.Value) error {
 				return err
 			}
 		}
-		e.w.write([]byte(strconv.Quote(jsonTag))...)
+		err = e.enc.Encode(jsonTag)
+		if err != nil {
+			return err
+		}
 		err = e.w.WriteByte(':')
 		if err != nil {
 			return err
 		}
-		err = e.encode(fv)
+		if use_string {
+			err = e.enc.Encode(fmt.Sprint(fv.Interface()))
+		} else {
+			err = e.encode(fv)
+		}
 		if err != nil {
 			return err
 		}
