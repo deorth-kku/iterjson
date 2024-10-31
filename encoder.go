@@ -22,17 +22,19 @@ func (e *Encoder) encode(arg reflect.Value) error {
 	switch arg.Kind() {
 	case reflect.Pointer:
 		return e.encode(arg.Elem())
+	case reflect.Interface:
+		return e.encode(reflect.ValueOf(arg.Interface()))
+	case reflect.Chan:
+		return e.encodeSeq(arg.Seq())
+	case reflect.Slice, reflect.Array:
+		return e.encodeSeq(seq2Values(arg.Seq2()))
+	case reflect.Map:
+		return e.encodeSeq2(arg.Seq2())
 	case reflect.Struct:
 		if msl, ok := arg.Interface().(json.Marshaler); ok {
 			return e.enc.Encode(msl)
 		}
 		return e.encodeStruct(arg)
-	case reflect.Map:
-		return e.encodeSeq2(arg.Seq2())
-	case reflect.Slice, reflect.Array:
-		return e.encodeSeq(seq2Values(arg.Seq2()))
-	case reflect.Interface:
-		return e.encode(reflect.ValueOf(arg.Interface()))
 	case reflect.Func:
 		ty := arg.Type()
 		if ty.CanSeq() {
