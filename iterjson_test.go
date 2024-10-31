@@ -29,6 +29,25 @@ func TestSeq(t *testing.T) {
 	}
 }
 
+func TestChannel(t *testing.T) {
+	ch := make(chan int)
+	go func() {
+		for i := range 100 {
+			ch <- i
+		}
+		close(ch)
+	}()
+	data, err := Marshal(ch)
+	if err != nil {
+		t.Error(err)
+	}
+	var list []int
+	err = json.Unmarshal(data, &list)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func TestSeq2(t *testing.T) {
 	l := map[string]any{
 		"1": "a",
@@ -162,7 +181,7 @@ func TestNested(t *testing.T) {
 	d0 := genDictAny{10}
 	d1 := genListAny{10}
 	m := map[string]any{
-		"dict": d0.Range,
+		"dict": struct{ A any }{d0.Range},
 		"list": d1.Range,
 	}
 	enc := NewEncoder(os.Stdout)
@@ -194,6 +213,15 @@ func TestSlice(t *testing.T) {
 		"b",
 		"c",
 		"d",
+	})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestMap(t *testing.T) {
+	err := verify(map[string]int{
+		"a": 1, // only one key-value pair, otherwise because go's map is not ordered, there is no guarantee the result will be the same
 	})
 	if err != nil {
 		t.Error(err)
