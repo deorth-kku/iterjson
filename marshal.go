@@ -2,15 +2,15 @@ package iterjson
 
 import "bytes"
 
-func Marshal[K comparable, V any](arg any) ([]byte, error) {
-	return MarshalIndent[K, V](arg, "", "")
+func Marshal(arg any) ([]byte, error) {
+	return MarshalIndent(arg, "", "")
 }
 
-func MarshalIndent[K comparable, V any](arg any, prefix, indent string) (data []byte, err error) {
+func MarshalIndent(arg any, prefix, indent string) (data []byte, err error) {
 	w := bytes.NewBuffer(nil)
-	e := NewEncoder[K, V](w)
+	e := NewEncoder(w)
 	e.SetIndent(prefix, indent)
-	err = e.encode(arg)
+	err = e.Encode(arg)
 	if err != nil {
 		return
 	}

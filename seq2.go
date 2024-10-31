@@ -2,9 +2,10 @@ package iterjson
 
 import (
 	"iter"
+	"reflect"
 )
 
-func (e *Encoder[K, V]) encodeSeq2(iter iter.Seq2[K, V]) (err error) {
+func (e *Encoder) encodeSeq2(iter iter.Seq2[reflect.Value, reflect.Value]) (err error) {
 	err = e.w.WriteByte('{')
 	if err != nil {
 		return

@@ -16,7 +16,7 @@ import (
 
 func TestSeq(t *testing.T) {
 	l := slices.Values([]string{"a", "b", "c"})
-	data, err := Marshal[string, string](l)
+	data, err := Marshal(l)
 	if err != nil {
 		t.Error(err)
 		return
@@ -34,7 +34,7 @@ func TestSeq2(t *testing.T) {
 		"b": "2",
 		"c": "3",
 	}
-	data, err := Marshal[string, any](maps.All(l))
+	data, err := Marshal(maps.All(l))
 	if err != nil {
 		t.Error(err)
 		return
@@ -70,7 +70,7 @@ func TestFormatReader(t *testing.T) {
 }
 
 func TestSetIndent(t *testing.T) {
-	enc := NewEncoder[string, any](os.Stdout)
+	enc := NewEncoder(os.Stdout)
 	enc.SetIndent("|test|", "    ")
 
 	m := map[string]any{
@@ -89,7 +89,7 @@ func TestSetIndent(t *testing.T) {
 }
 
 func TestSetEscapeHTML(t *testing.T) {
-	enc := NewEncoder[string, any](os.Stdout)
+	enc := NewEncoder(os.Stdout)
 	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "    ")
 
@@ -109,7 +109,7 @@ func TestSetEscapeHTML(t *testing.T) {
 }
 
 func TestSetNewlines(t *testing.T) {
-	enc := NewEncoder[string, any](os.Stdout)
+	enc := NewEncoder(os.Stdout)
 	enc.SetEscapeHTML(false)
 	enc.SetNewlines(true)
 
@@ -164,7 +164,7 @@ func TestNested(t *testing.T) {
 		"dict": d0.Range,
 		"list": d1.Range,
 	}
-	enc := NewEncoder[string, any](os.Stdout)
+	enc := NewEncoder(os.Stdout)
 	enc.SetIndent("", "    ")
 	err := enc.Encode(m)
 	if err != nil {

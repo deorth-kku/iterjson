@@ -3,50 +3,49 @@ package iterjson
 import (
 	"encoding/json"
 	"io"
-	"iter"
-	"maps"
-	"slices"
+	"reflect"
 )
 
-type Encoder[K comparable, V any] struct {
+type Encoder struct {
 	*json.Encoder
 	w          *FormatWriter
 	escapeHTML bool
 }
 
-func NewEncoder[K comparable, V any](w io.Writer) *Encoder[K, V] {
+func NewEncoder(w io.Writer) *Encoder {
 	fw := NewFormatWriter(w, "", "")
-	return &Encoder[K, V]{json.NewEncoder(fw), fw, true}
+	return &Encoder{json.NewEncoder(fw), fw, true}
 }
 
-func (e *Encoder[K, V]) encode(arg any) (err error) {
-	switch v := arg.(type) {
-	case iter.Seq[V]:
-		return e.encodeSeq(v)
-	case func(func(V) bool):
-		return e.encodeSeq(v)
-	case iter.Seq2[K, V]:
-		return e.encodeSeq2(v)
-	case func(func(K, V) bool):
-		return e.encodeSeq2(v)
-	case []V:
-		return e.encodeSeq(slices.Values(v))
-	case map[K]V:
-		return e.encodeSeq2(maps.All(v))
+func (e *Encoder) encode(arg reflect.Value) error {
+	if arg.Kind() == reflect.Pointer {
+		arg = arg.Elem()
+	}
+	switch arg.Kind() {
+	case reflect.Struct:
+		return nil
+	case reflect.Map:
+		return e.encodeSeq2(arg.Seq2())
+	case reflect.Slice:
+		return e.encodeSeq(arg.Seq())
+	case reflect.Func:
+		ty := arg.Type()
+		if ty.CanSeq() {
+			return e.encodeSeq(arg.Seq())
+		} else if ty.CanSeq2() {
+			return e.encodeSeq2(arg.Seq2())
+		}
+		fallthrough
 	default:
-		return e.Encoder.Encode(arg)
+		return e.Encoder.Encode(arg.Interface())
 	}
 }
 
-func (e *Encoder[K, V]) Encode(arg any) (err error) {
-	err = e.encode(arg)
-	if err != nil {
-		return
-	}
-	return
+func (e *Encoder) Encode(arg any) error {
+	return e.encode(reflect.ValueOf(arg))
 }
 
-func (e *Encoder[K, V]) SetIndent(prefix, indent string) {
+func (e *Encoder) SetIndent(prefix, indent string) {
 	if len(prefix) == 0 && len(indent) == 0 {
 		return
 	}
@@ -55,11 +54,11 @@ func (e *Encoder[K, V]) SetIndent(prefix, indent string) {
 	e.Encoder.SetEscapeHTML(e.escapeHTML)
 }
 
-func (e *Encoder[K, V]) SetEscapeHTML(escapeHTML bool) {
+func (e *Encoder) SetEscapeHTML(escapeHTML bool) {
 	e.escapeHTML = escapeHTML
 	e.Encoder.SetEscapeHTML(escapeHTML)
 }
 
-func (e *Encoder[K, V]) SetNewlines(newlines bool) {
+func (e *Encoder) SetNewlines(newlines bool) {
 	e.w.tailing_newline = newlines
 }

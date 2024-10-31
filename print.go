@@ -5,20 +5,20 @@ import (
 	"os"
 )
 
-func IterFprint[K comparable, V any](f io.Writer, data any) (err error) {
-	enc := NewEncoder[K, V](f)
+func IterFprint(f io.Writer, data any) (err error) {
+	enc := NewEncoder(f)
 	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "  ")
 	err = enc.Encode(data)
 	return
 }
 
-func IterPrint[K comparable, V any](data any) error {
-	return IterFprint[K, V](os.Stdout, data)
+func IterPrint(data any) error {
+	return IterFprint(os.Stdout, data)
 }
 
 func Fprint(f io.Writer, data any) error {
-	return IterFprint[string, map[string]any](f, data)
+	return IterFprint(f, data)
 }
 
 func Print(data any) error {

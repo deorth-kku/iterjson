@@ -25,7 +25,7 @@ func (g genDict) Range(yield func(string, int) bool) {
 func BenchmarkEncoder(b *testing.B) {
 	b.StopTimer()
 	data := genDict{b.N}
-	enc := NewEncoder[string, int](io.Discard)
+	enc := NewEncoder(io.Discard)
 	b.StartTimer()
 	err := enc.Encode(data.Range)
 	if err != nil {
@@ -49,7 +49,7 @@ func BenchmarkReader(b *testing.B) {
 	b.StopTimer()
 	d0 := genDict{b.N}
 	data := bytes.NewBuffer(nil)
-	enc := NewEncoder[string, int](data)
+	enc := NewEncoder(data)
 	err := enc.Encode(d0.Range)
 	if err != nil {
 		b.Error(err)
@@ -66,7 +66,7 @@ func BenchmarkWriter(b *testing.B) {
 	b.StopTimer()
 	d0 := genDict{b.N}
 	data := bytes.NewBuffer(nil)
-	enc := NewEncoder[string, int](data)
+	enc := NewEncoder(data)
 	err := enc.Encode(d0.Range)
 	if err != nil {
 		b.Error(err)
