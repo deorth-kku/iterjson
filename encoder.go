@@ -3,6 +3,7 @@ package iterjson
 import (
 	"encoding/json"
 	"io"
+	"iter"
 	"reflect"
 )
 
@@ -28,8 +29,8 @@ func (e *Encoder) encode(arg reflect.Value) error {
 		return e.encodeStruct(arg)
 	case reflect.Map:
 		return e.encodeSeq2(arg.Seq2())
-	case reflect.Slice:
-		return e.encodeSeq(arg.Seq())
+	case reflect.Slice, reflect.Array:
+		return e.encodeSeq(seq2Values(arg.Seq2()))
 	case reflect.Interface:
 		return e.encode(reflect.ValueOf(arg.Interface()))
 	case reflect.Func:
@@ -65,4 +66,14 @@ func (e *Encoder) SetEscapeHTML(escapeHTML bool) {
 
 func (e *Encoder) SetNewlines(newlines bool) {
 	e.w.tailing_newline = newlines
+}
+
+func seq2Values[K any, V any](seq2 iter.Seq2[K, V]) iter.Seq[V] {
+	return func(yield func(V) bool) {
+		for _, v := range seq2 {
+			if !yield(v) {
+				return
+			}
+		}
+	}
 }

@@ -188,6 +188,18 @@ func verify(arg any) error {
 	return nil
 }
 
+func TestSlice(t *testing.T) {
+	err := verify([]string{
+		"a",
+		"b",
+		"c",
+		"d",
+	})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 type testStruct struct {
 	NormalField        string
 	FieldWithTag       string `json:"this_is_tag"`
