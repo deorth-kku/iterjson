@@ -25,6 +25,5 @@ func (e *Encoder) encodeSeq(iter iter.Seq[reflect.Value]) (err error) {
 			return
 		}
 	}
-	err = e.w.WriteByte(']')
-	return
+	return e.w.WriteByte(']')
 }

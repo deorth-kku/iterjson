@@ -18,16 +18,26 @@ func NewEncoder(w io.Writer) *Encoder {
 }
 
 func (e *Encoder) encode(arg reflect.Value) error {
-	if arg.Kind() == reflect.Pointer {
+	for arg.Kind() == reflect.Pointer {
 		arg = arg.Elem()
 	}
 	switch arg.Kind() {
 	case reflect.Struct:
-		return nil
+		if msl, ok := arg.Interface().(json.Marshaler); ok {
+			data, err := msl.MarshalJSON()
+			if err != nil {
+				return err
+			}
+			e.w.write(data...)
+			return nil
+		}
+		return e.encodeStruct(arg)
 	case reflect.Map:
 		return e.encodeSeq2(arg.Seq2())
 	case reflect.Slice:
 		return e.encodeSeq(arg.Seq())
+	case reflect.Interface:
+		return e.encode(reflect.ValueOf(arg.Interface()))
 	case reflect.Func:
 		ty := arg.Type()
 		if ty.CanSeq() {

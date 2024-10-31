@@ -33,6 +33,5 @@ func (e *Encoder) encodeSeq2(iter iter.Seq2[reflect.Value, reflect.Value]) (err 
 			return
 		}
 	}
-	err = e.w.WriteByte('}')
-	return
+	return e.w.WriteByte('}')
 }
