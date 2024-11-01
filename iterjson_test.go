@@ -210,12 +210,17 @@ func verify(arg any) error {
 }
 
 func TestSlice(t *testing.T) {
-	err := verify([]string{
+	data := [4]string{
 		"a",
 		"b",
 		"c",
 		"d",
-	})
+	}
+	err := verify(data)
+	if err != nil {
+		t.Error(err)
+	}
+	err = verify(data[:])
 	if err != nil {
 		t.Error(err)
 	}
@@ -236,15 +241,17 @@ type testStruct struct {
 	FieldWithOmitEmpty string `json:"om,omitempty"`
 	FieldToString      int    `json:"number,string"`
 	OmitField          bool   `json:"-"`
+	unexported         bool
 }
 
 func TestStruct(t *testing.T) {
 	err := verify(testStruct{
 		NormalField:        "a",
 		FieldWithTag:       "b",
-		FieldWithOmitEmpty: "c",
+		FieldWithOmitEmpty: "",
 		FieldToString:      4,
 		OmitField:          false,
+		unexported:         true,
 	})
 	if err != nil {
 		t.Error(err)

@@ -5,9 +5,51 @@ import (
 	"io"
 	"maps"
 	"math/rand/v2"
+	"slices"
 	"strconv"
 	"testing"
 )
+
+func getSlice(n int) []string {
+	out := make([]string, n)
+	for i := range n {
+		out[i] = strconv.Itoa(rand.Int())
+	}
+	return out
+}
+
+func BenchmarkSeq(b *testing.B) {
+	b.StopTimer()
+	data := getSlice(b.N)
+	enc := NewEncoder(io.Discard)
+	b.StartTimer()
+	err := enc.Encode(slices.Values(data))
+	if err != nil {
+		b.Error(err)
+	}
+}
+
+func BenchmarkSlice(b *testing.B) {
+	b.StopTimer()
+	data := getSlice(b.N)
+	enc := NewEncoder(io.Discard)
+	b.StartTimer()
+	err := enc.Encode(data)
+	if err != nil {
+		b.Error(err)
+	}
+}
+
+func BenchmarkSliceStd(b *testing.B) {
+	b.StopTimer()
+	data := getSlice(b.N)
+	enc := json.NewEncoder(io.Discard)
+	b.StartTimer()
+	err := enc.Encode(data)
+	if err != nil {
+		b.Error(err)
+	}
+}
 
 func genDict(n int) map[string]int {
 	out := make(map[string]int, n)
