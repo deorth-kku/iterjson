@@ -56,7 +56,7 @@ func (e *Encoder) encode(arg reflect.Value) error {
 		fallthrough
 	case reflect.Array:
 		if !canMarshal(arg) {
-			return e.encodeSeq(seq2Values(arg.Seq2()))
+			return e.encodeSeq(iterSlice(arg))
 		}
 	case reflect.Map:
 		if arg.IsNil() {
@@ -108,10 +108,10 @@ func (e *Encoder) SetNewlines(newlines bool) {
 	e.w.tailing_newline = newlines
 }
 
-func seq2Values[K any, V any](seq2 iter.Seq2[K, V]) iter.Seq[V] {
-	return func(yield func(V) bool) {
-		for _, v := range seq2 {
-			if !yield(v) {
+func iterSlice(arg reflect.Value) iter.Seq[reflect.Value] {
+	return func(yield func(reflect.Value) bool) {
+		for i := range arg.Len() {
+			if !yield(arg.Index(i)) {
 				return
 			}
 		}
