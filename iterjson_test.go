@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"iter"
+	"log/slog"
 	"maps"
 	"math/rand/v2"
 	"net/http"
@@ -251,6 +253,108 @@ func TestStruct(t *testing.T) {
 
 func TestNil(t *testing.T) {
 	err := verify(nil)
+	if err != nil {
+		t.Error(err)
+	}
+
+	var nilslice []string
+	err = verify(nilslice)
+	if err != nil {
+		t.Error(err)
+	}
+
+	var nilmap map[string]any
+	err = verify(nilmap)
+	if err != nil {
+		t.Error(err)
+	}
+
+	var nilptr *int
+	err = verify(nilptr)
+	if err != nil {
+		t.Error(err)
+	}
+
+	var nilchan chan int
+	_, err = Marshal(nilchan)
+	if err != nil {
+		t.Error(err)
+	}
+
+	var niliter iter.Seq[string]
+	_, err = Marshal(niliter)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestEmpty(t *testing.T) {
+	emptyslice := make([]string, 0)
+	err := verify(emptyslice)
+	if err != nil {
+		t.Error(err)
+	}
+	emptymap := make(map[string]any)
+	err = verify(emptymap)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = verify(struct{}{})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+type example struct{}
+
+func (example) MarshalJSON() ([]byte, error) {
+	return []byte(`"example"`), nil
+}
+
+type example2 struct{}
+
+func (*example2) MarshalJSON() ([]byte, error) {
+	return []byte(`"example2"`), nil
+}
+
+type example3 func()
+
+func (example3) MarshalJSON() ([]byte, error) {
+	return []byte(`"example3"`), nil
+}
+
+func TestMarshaller(t *testing.T) {
+	a := example{}
+	err := verify(a)
+	if err != nil {
+		t.Error(err)
+	}
+	b := &example{}
+	err = verify(b)
+	if err != nil {
+		t.Error(err)
+	}
+
+	c := example2{}
+	err = verify(c)
+	if err != nil {
+		t.Error(err)
+	}
+	d := &example{}
+	err = verify(d)
+	if err != nil {
+		t.Error(err)
+	}
+
+	e := example3(func() {})
+	err = verify(e)
+	if err != nil {
+		t.Error(err)
+	}
+
+	f := &slog.LevelVar{}
+	err = verify(f)
 	if err != nil {
 		t.Error(err)
 	}

@@ -31,5 +31,11 @@ func (e *Encoder) encodeSeq2(iter iter.Seq2[reflect.Value, reflect.Value]) (err 
 			return
 		}
 	}
+	if first {
+		err = e.w.WriteByte('{')
+		if err != nil {
+			return
+		}
+	}
 	return e.w.WriteByte('}')
 }

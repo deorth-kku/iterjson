@@ -1,6 +1,7 @@
 package iterjson
 
 import (
+	"encoding"
 	"encoding/json"
 	"io"
 	"iter"
@@ -18,36 +19,71 @@ func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{json.NewEncoder(fw), fw, true}
 }
 
+var (
+	marshalerType     = reflect.TypeOf((*json.Marshaler)(nil)).Elem()
+	textMarshalerType = reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem()
+)
+
+func canMarshal(v reflect.Value) bool {
+	t := v.Type()
+	return t.Implements(marshalerType) || t.Implements(textMarshalerType)
+}
+
 func (e *Encoder) encode(arg reflect.Value) error {
 	switch arg.Kind() {
 	case reflect.Pointer:
-		return e.encode(arg.Elem())
+		if arg.IsNil() {
+			return e.enc.Encode(nil)
+		}
+		if !canMarshal(arg) {
+			return e.encode(arg.Elem())
+		}
 	case reflect.Interface:
 		return e.encode(reflect.ValueOf(arg.Interface()))
 	case reflect.Invalid:
 		return e.enc.Encode(nil)
 	case reflect.Chan:
-		return e.encodeSeq(arg.Seq())
-	case reflect.Slice, reflect.Array:
-		return e.encodeSeq(seq2Values(arg.Seq2()))
-	case reflect.Map:
-		return e.encodeSeq2(arg.Seq2())
-	case reflect.Struct:
-		if msl, ok := arg.Interface().(json.Marshaler); ok {
-			return e.enc.Encode(msl)
+		if arg.IsNil() {
+			return e.enc.Encode(nil)
 		}
-		return e.encodeStruct(arg)
-	case reflect.Func:
-		ty := arg.Type()
-		if ty.CanSeq() {
+		if !canMarshal(arg) {
 			return e.encodeSeq(arg.Seq())
-		} else if ty.CanSeq2() {
-			return e.encodeSeq2(arg.Seq2())
+		}
+	case reflect.Slice:
+		if arg.IsNil() {
+			return e.enc.Encode(nil)
 		}
 		fallthrough
-	default:
-		return e.enc.Encode(arg.Interface())
+	case reflect.Array:
+		if !canMarshal(arg) {
+			return e.encodeSeq(seq2Values(arg.Seq2()))
+		}
+	case reflect.Map:
+		if arg.IsNil() {
+			return e.enc.Encode(nil)
+		}
+		if !canMarshal(arg) {
+			return e.encodeSeq2(arg.Seq2())
+		}
+	case reflect.Struct:
+		if !canMarshal(arg) {
+			return e.encodeStruct(arg)
+		}
+	case reflect.Func:
+		if arg.IsNil() {
+			return e.enc.Encode(nil)
+		}
+		if !canMarshal(arg) {
+			ty := arg.Type()
+			if ty.CanSeq() {
+				return e.encodeSeq(arg.Seq())
+			} else if ty.CanSeq2() {
+				return e.encodeSeq2(arg.Seq2())
+			}
+			return e.enc.Encode(arg.Interface())
+		}
 	}
+	return e.enc.Encode(arg.Interface())
 }
 
 func (e *Encoder) Encode(arg any) error {

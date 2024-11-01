@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func (e *Encoder) encodeStruct(v reflect.Value) error {
+func (e *Encoder) encodeStruct(v reflect.Value) (err error) {
 	first := true
 	t := v.Type()
 	for i := range t.NumField() {
@@ -36,8 +36,6 @@ func (e *Encoder) encodeStruct(v reflect.Value) error {
 				}
 			}
 		}
-
-		var err error
 		if first {
 			first = false
 			err = e.w.WriteByte('{')
@@ -62,6 +60,12 @@ func (e *Encoder) encodeStruct(v reflect.Value) error {
 		}
 		if err != nil {
 			return err
+		}
+	}
+	if first {
+		err = e.w.WriteByte('{')
+		if err != nil {
+			return
 		}
 	}
 	return e.w.WriteByte('}')

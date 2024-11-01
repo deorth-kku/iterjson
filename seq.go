@@ -22,5 +22,11 @@ func (e *Encoder) encodeSeq(iter iter.Seq[reflect.Value]) (err error) {
 			return
 		}
 	}
+	if first {
+		err = e.w.WriteByte('[')
+		if err != nil {
+			return
+		}
+	}
 	return e.w.WriteByte(']')
 }
