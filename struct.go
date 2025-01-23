@@ -2,20 +2,38 @@ package iterjson
 
 import (
 	"fmt"
+	"iter"
 	"reflect"
 	"strings"
 )
 
+func rangeStruct(v reflect.Value) iter.Seq2[reflect.StructField, reflect.Value] {
+	t := v.Type()
+	return func(yield func(reflect.StructField, reflect.Value) bool) {
+		for i := range t.NumField() {
+			field := t.Field(i)
+			if field.Anonymous {
+				for f, v := range rangeStruct(v.Field(i)) {
+					if !yield(f, v) {
+						return
+					}
+				}
+			} else {
+				if !field.IsExported() {
+					continue
+				}
+				if !yield(field, v.Field(i)) {
+					return
+				}
+			}
+		}
+	}
+}
+
 func (e *Encoder) encodeStruct(v reflect.Value) (err error) {
 	first := true
-	t := v.Type()
-	for i := range t.NumField() {
-		field := t.Field(i)
-		if !field.IsExported() {
-			continue
-		}
+	for field, fv := range rangeStruct(v) {
 		jsonTag := field.Tag.Get("json") // used as key
-		fv := v.Field(i)                 // used as value
 		var use_string bool
 		if len(jsonTag) == 0 {
 			jsonTag = field.Name

@@ -194,6 +194,7 @@ func TestNested(t *testing.T) {
 	}
 }
 
+// verify that the result of Marshal is the same as [json.Marshal]
 func verify(arg any) error {
 	data0, err := Marshal(arg)
 	if err != nil {
@@ -235,7 +236,12 @@ func TestMap(t *testing.T) {
 	}
 }
 
+type embedStruct struct {
+	F int
+}
+
 type testStruct struct {
+	embedStruct
 	NormalField        string
 	FieldWithTag       string `json:"this_is_tag"`
 	FieldWithOmitEmpty string `json:"om,omitempty"`
@@ -252,6 +258,9 @@ func TestStruct(t *testing.T) {
 		FieldToString:      4,
 		OmitField:          false,
 		unexported:         true,
+		embedStruct: embedStruct{
+			F: 1,
+		},
 	})
 	if err != nil {
 		t.Error(err)
