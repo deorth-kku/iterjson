@@ -1,6 +1,9 @@
 package iterjson
 
-import "io"
+import (
+	"io"
+	"slices"
+)
 
 type Formatter struct {
 	buf             []byte
@@ -24,7 +27,7 @@ func NewFormatter(prefix, indent string) *Formatter {
 }
 
 func (f *Formatter) Format(p []byte) []byte {
-	f.buf = nil
+	f.buf = slices.Grow(f.buf[:0], len(p))
 	f.Write(p)
 	return f.buf
 }

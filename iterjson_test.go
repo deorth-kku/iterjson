@@ -243,10 +243,11 @@ type embedStruct struct {
 type testStruct struct {
 	embedStruct
 	NormalField        string
-	FieldWithTag       string `json:"this_is_tag"`
-	FieldWithOmitEmpty string `json:"om,omitempty"`
-	FieldToString      int    `json:"number,string"`
-	OmitField          bool   `json:"-"`
+	FieldWithTag       string  `json:"this_is_tag"`
+	FieldWithOmitEmpty string  `json:"om,omitempty"`
+	FieldToString      int     `json:"number,string"`
+	FieldToStringFloat float32 `json:"float,string"`
+	OmitField          bool    `json:"-"`
 	unexported         bool
 }
 
@@ -256,7 +257,8 @@ func TestStruct(t *testing.T) {
 		FieldWithTag:       "b",
 		FieldWithOmitEmpty: "",
 		FieldToString:      4,
-		OmitField:          false,
+		FieldToStringFloat: 1.24,
+		OmitField:          true,
 		unexported:         true,
 		embedStruct: embedStruct{
 			F: 1,

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"iter"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -28,6 +29,22 @@ func rangeStruct(v reflect.Value) iter.Seq2[reflect.StructField, reflect.Value] 
 			}
 		}
 	}
+}
+
+func (e *Encoder) writestring(s string) (err error) {
+	err = e.w.WriteByte('"')
+	if err != nil {
+		return err
+	}
+	_, err = e.w.Write([]byte(s))
+	if err != nil {
+		return err
+	}
+	err = e.w.WriteByte('"')
+	if err != nil {
+		return err
+	}
+	return
 }
 
 func (e *Encoder) encodeStruct(v reflect.Value) (err error) {
@@ -63,7 +80,7 @@ func (e *Encoder) encodeStruct(v reflect.Value) (err error) {
 		if err != nil {
 			return err
 		}
-		err = e.enc.Encode(jsonTag)
+		err = e.writestring(jsonTag)
 		if err != nil {
 			return err
 		}
@@ -72,7 +89,21 @@ func (e *Encoder) encodeStruct(v reflect.Value) (err error) {
 			return err
 		}
 		if use_string {
-			err = e.enc.Encode(fmt.Sprint(fv.Interface()))
+			switch fv.Kind() {
+			case reflect.String:
+				err = e.writestring(fv.String())
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				err = e.writestring(strconv.FormatInt(fv.Int(), 10))
+			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				err = e.writestring(strconv.FormatUint(fv.Uint(), 10))
+			case reflect.Float32:
+				err = e.writestring(strconv.FormatFloat(fv.Float(), 'f', -1, 32))
+			case reflect.Float64:
+				err = e.writestring(strconv.FormatFloat(fv.Float(), 'f', -1, 64))
+			case reflect.Bool:
+			default:
+				return fmt.Errorf("tag string only support string, int, uint, float, bool, not %s", fv.Type())
+			}
 		} else {
 			err = e.encode(fv)
 		}
