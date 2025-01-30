@@ -132,7 +132,7 @@ func parseType(rt reflect.Type) []run2 {
 					fv := stc.Field(i)
 					return fv, !fv.Bool()
 				}
-			case reflect.Slice, reflect.Map, reflect.Chan, reflect.Pointer, reflect.UnsafePointer:
+			case reflect.Slice, reflect.Map, reflect.Chan, reflect.Func, reflect.Pointer, reflect.UnsafePointer:
 				r.getField = func(stc reflect.Value) (reflect.Value, bool) {
 					fv := stc.Field(i)
 					return fv, fv.IsNil()
