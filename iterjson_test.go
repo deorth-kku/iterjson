@@ -247,6 +247,7 @@ type testStruct struct {
 	NormalField        string
 	FieldWithTag       string  `json:"this_is_tag"`
 	FieldWithOmitEmpty string  `json:"om,omitempty"`
+	OmitEmptyString    int     `json:"omstr,omitempty,string"`
 	FieldToString      int     `json:"number,string"`
 	FieldToStringFloat float32 `json:"float,string"`
 	OmitField          bool    `json:"-"`
@@ -257,7 +258,6 @@ func TestStruct(t *testing.T) {
 	err := verify(testStruct{
 		NormalField:        "a",
 		FieldWithTag:       "b",
-		FieldWithOmitEmpty: "",
 		FieldToString:      4,
 		FieldToStringFloat: 1.24,
 		OmitField:          true,
