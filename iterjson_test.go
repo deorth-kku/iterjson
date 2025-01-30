@@ -237,11 +237,13 @@ func TestMap(t *testing.T) {
 }
 
 type embedStruct struct {
-	F int
+	F  int
+	F2 uint
 }
 
 type testStruct struct {
 	embedStruct
+	F                  int
 	NormalField        string
 	FieldWithTag       string  `json:"this_is_tag"`
 	FieldWithOmitEmpty string  `json:"om,omitempty"`
@@ -260,8 +262,10 @@ func TestStruct(t *testing.T) {
 		FieldToStringFloat: 1.24,
 		OmitField:          true,
 		unexported:         true,
+		F:                  10,
 		embedStruct: embedStruct{
-			F: 1,
+			F:  1,
+			F2: 2,
 		},
 	})
 	if err != nil {
