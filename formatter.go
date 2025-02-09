@@ -88,7 +88,9 @@ func (f *Formatter) Write(p []byte) (int, error) {
 		default:
 			if !f.has_element {
 				f.has_element = true
-				f.newline()
+				if f.level != 0 {
+					f.newline()
+				}
 				f.writeindent()
 			}
 			f.write(b)
