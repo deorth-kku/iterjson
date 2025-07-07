@@ -1,10 +1,12 @@
 package iterjson
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"io"
 	"maps"
 	"math/rand/v2"
+	"net"
 	"slices"
 	"strconv"
 	"testing"
@@ -92,6 +94,12 @@ func BenchmarkMapStd(b *testing.B) {
 	}
 }
 
+func randomIP() net.IP {
+	ip := make(net.IP, 4)
+	binary.BigEndian.PutUint32(ip, rand.Uint32())
+	return ip
+}
+
 func getStruct(n int) []testStruct {
 	out := make([]testStruct, n)
 	for i := range n {
@@ -100,6 +108,7 @@ func getStruct(n int) []testStruct {
 		out[i].FieldWithTag = strconv.Itoa(rand.Int())
 		out[i].FieldWithOmitEmpty = ""
 		out[i].OmitField = false
+		out[i].IP = randomIP()
 	}
 	return out
 }

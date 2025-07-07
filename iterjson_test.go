@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"maps"
 	"math/rand/v2"
+	"net"
 	"net/http"
 	"os"
 	"slices"
@@ -250,7 +251,8 @@ type testStruct struct {
 	OmitEmptyString    int     `json:"omstr,omitempty,string"`
 	FieldToString      int     `json:"number,string"`
 	FieldToStringFloat float32 `json:"float,string"`
-	OmitField          bool    `json:"-"`
+	IP                 net.IP
+	OmitField          bool `json:"-"`
 	unexported         bool
 }
 
@@ -267,6 +269,7 @@ func TestStruct(t *testing.T) {
 			F:  1,
 			F2: 2,
 		},
+		IP: net.IPv4(1, 3, 4, 5),
 	})
 	if err != nil {
 		t.Error(err)
@@ -342,8 +345,8 @@ func (*example2) MarshalJSON() ([]byte, error) {
 
 type example3 func()
 
-func (example3) MarshalJSON() ([]byte, error) {
-	return []byte(`"example3"`), nil
+func (example3) MarshalText() ([]byte, error) {
+	return []byte(`example3`), nil
 }
 
 func TestMarshaller(t *testing.T) {

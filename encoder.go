@@ -19,14 +19,13 @@ func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{json.NewEncoder(fw), fw, true}
 }
 
-var (
-	marshalerType     = reflect.TypeOf((*json.Marshaler)(nil)).Elem()
-	textMarshalerType = reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem()
-)
-
 func canMarshal(v reflect.Value) bool {
-	t := v.Type()
-	return t.Implements(marshalerType) || t.Implements(textMarshalerType)
+	switch v.Interface().(type) {
+	case json.Marshaler, encoding.TextMarshaler:
+		return true
+	default:
+		return false
+	}
 }
 
 func (e *Encoder) encode(arg reflect.Value) error {
